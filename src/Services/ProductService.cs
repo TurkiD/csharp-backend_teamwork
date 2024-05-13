@@ -1,11 +1,14 @@
+using AutoMapper;
 using Dtos.Pagination;
 using Microsoft.EntityFrameworkCore;
 public class ProductService
 {
     private readonly AppDBContext _appDbContext;
-    public ProductService(AppDBContext appDBContext)
+    private readonly IMapper _mapper;
+    public ProductService(AppDBContext appDBContext, IMapper mapper)
     {
         _appDbContext = appDBContext;
+        _mapper = mapper;
     }
 
     public async Task<PaginationResult<Product>> GetAllProductService(int pageNumber, int pageSize)
@@ -17,7 +20,8 @@ public class ProductService
             .ThenByDescending(b => b.ProductID)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Include(p => p.Category)
+            // .Include(p => p.Category)
+            // .Select(product => _mapper.Map<ProductModel>(product))
             .ToListAsync();
 
         return new PaginationResult<Product>
