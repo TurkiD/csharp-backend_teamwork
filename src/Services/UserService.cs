@@ -1,6 +1,8 @@
 using api.Dtos;
 using api.Dtos.User;
 using AutoMapper;
+using Dtos.Pagination;
+using Dtos.User.Profile;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,63 +22,64 @@ public class UserService
         _mapper = mapper;
     }
 
-    public async Task<List<UserDto>> GetAllUsersAsync()
+    public async Task<PaginationResult<UserDto>> GetAllUsersAsync(int pageNumber, int pageSize)
     {
-        
-        // return await _dbContext.Users.Include(user => user.Orders).ToListAsync();
-        var users = await _dbContext.Users.Select(user => _mapper.Map<UserDto>(user)).ToListAsync();
-        return  users;
+
+        var totalUserCount = await _dbContext.Users.CountAsync();
+        var users = await _dbContext.Users
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .Select(u => _mapper.Map<UserDto>(u)).ToListAsync();
+
+        return new PaginationResult<UserDto>
+        {
+            Items = users,
+            TotalCount = totalUserCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+        };
     }
 
-    public async Task<UserDto?> GetUserById(Guid userId)
+    public async Task<UserProfileDto> GetUserById(Guid userId)
     {
         // return await _dbContext.Users.Include(u => u.Orders).FirstOrDefaultAsync(u => u.UserID == userId);
-         var user = await _dbContext.Users.FindAsync(userId);
-            var userDto = _mapper.Map<UserDto>(user);
-            return userDto;
+        var user = await _dbContext.Users.FindAsync(userId);
+        var userDto = _mapper.Map<UserProfileDto>(user);
+        return userDto;
     }
 
-    public async Task<User> CreateUser(UserModel newUser)
+    public async Task<User> CreateUser(SignupDto newUser)
     {
-            User createUser = new User
-            {
-                Username = newUser.Username,
-                Email = newUser.Email,
-                Password = _passwordHasher.HashPassword(null, newUser.Password),
-                FirstName = newUser.FirstName,
-                LastName = newUser.LastName,
-                CreatedAt = DateTime.UtcNow,
-                BirthDate = newUser.BirthDate,
-                Address = newUser.Address,
-                IsAdmin = newUser.IsAdmin,
-                IsBanned = newUser.IsBanned
-            };
+        var createUser = new User
+        {
+            Username = newUser.Username,
+            Email = newUser.Email,
+            Password = _passwordHasher.HashPassword(null, newUser.Password),
+        };
 
-            _dbContext.Users.Add(createUser);
-
-            await _dbContext.SaveChangesAsync();
-
-            return createUser;
+        _dbContext.Users.Add(createUser);
+        await _dbContext.SaveChangesAsync();
+        return createUser;
     }
 
     public async Task<bool> UpdateUser(Guid userId, UserModel updateUser)
     {
-            var existingUser = _dbContext.Users.FirstOrDefault(u => u.UserID == userId);
-            if (existingUser != null && updateUser != null)
-            {
-                existingUser.Username = updateUser.Username;
-                existingUser.Email = updateUser.Email;
-                existingUser.FirstName = updateUser.FirstName;
-                existingUser.LastName = updateUser.LastName;
-                existingUser.Address = updateUser.Address;
-                existingUser.PhoneNumber = updateUser.PhoneNumber;
-                existingUser.IsBanned = updateUser.IsBanned;
+        var existingUser = _dbContext.Users.FirstOrDefault(u => u.UserID == userId);
+        if (existingUser != null && updateUser != null)
+        {
+            existingUser.Username = updateUser.Username;
+            existingUser.Email = updateUser.Email;
+            existingUser.FirstName = updateUser.FirstName;
+            existingUser.LastName = updateUser.LastName;
+            existingUser.Address = updateUser.Address;
+            existingUser.PhoneNumber = updateUser.PhoneNumber;
+            existingUser.IsBanned = updateUser.IsBanned;
 
-                await _dbContext.SaveChangesAsync();
-                return true; // Return true indicating successful update
-            }
+            await _dbContext.SaveChangesAsync();
+            return true; // Return true indicating successful update
+        }
 
-            return false; // Return false if either existingUser or updateUser is null
+        return false; // Return false if either existingUser or updateUser is null
     }
 
     public async Task<bool> DeleteUser(Guid userId)

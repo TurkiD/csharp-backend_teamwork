@@ -1,5 +1,6 @@
 using api.Dtos;
 using AutoMapper;
+using Dtos.User.Profile;
 
 namespace api.Mapper
 {
@@ -8,6 +9,7 @@ namespace api.Mapper
         public MappingProfile()
         {
             CreateMap<User, UserDto>();
+            CreateMap<User, UserProfileDto>();
         }
     }
 }

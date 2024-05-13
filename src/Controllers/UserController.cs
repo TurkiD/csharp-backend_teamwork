@@ -25,9 +25,9 @@ public class UserController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpGet("account/dashboard/users")]
-    public async Task<IActionResult> GetAllUsers()
+    public async Task<IActionResult> GetAllUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
     {
-        var users = await _userService.GetAllUsersAsync();
+        var users = await _userService.GetAllUsersAsync(pageNumber, pageSize);
         if (users == null)
         {
             throw new NotFoundException("No user Found");
@@ -69,7 +69,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("signup")]
-    public async Task<IActionResult> CreateUser(UserModel newUser)
+    public async Task<IActionResult> CreateUser(SignupDto newUser)
     {
         var createdUser = await _userService.CreateUser(newUser);
         if (createdUser != null)

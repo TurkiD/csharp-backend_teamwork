@@ -22,7 +22,6 @@ public class UserModel
     public required string FirstName { get; set; }
 
     [Required(ErrorMessage = "Last name is required")]
-
     public required string LastName { get; set; } 
 
     public string PhoneNumber { get; set; } = string.Empty;
@@ -34,6 +33,5 @@ public class UserModel
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
 
     public List<OrderModel> Orders { get; set; } = new List<OrderModel>();
-
     public List<CartModel> Carts { get; set; } = new List<CartModel>();
 }
