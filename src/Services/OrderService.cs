@@ -1,17 +1,43 @@
+using AutoMapper;
+using Dtos.Order;
+using Dtos.OrderDto;
+using Dtos.Pagination;
+using Dtos.Product;
+using Dtos.User;
 using EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 public class OrderService
 {
-    private AppDBContext _appDbContext;
-    public OrderService(AppDBContext appDbContext)
+    private readonly AppDBContext _appDbContext;
+    private readonly IMapper _mapper;
+    public OrderService(AppDBContext appDbContext, IMapper mapper)
     {
         _appDbContext = appDbContext;
+        _mapper = mapper;
     }
 
-    public async Task<List<Order>> GetAllOrdersService()
+    public async Task<PaginationResult<OrderDto>> GetAllOrdersService(int pageNumber, int pageSize)
     {
-        return await _appDbContext.Orders.Include(order => order.Products).ToListAsync();
+        var totalCount = _appDbContext.Orders.Count();
+        var totalPages = (int)Math.Ceiling((decimal)totalCount / pageSize);
+        var page = await _appDbContext.Orders
+            // .Include(o => o.User)
+            // .Include(o => o.Products)
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenByDescending(o => o.OrderId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => _mapper.Map<OrderDto>(p))
+            .ToListAsync();
+
+        return new PaginationResult<OrderDto>
+        {
+            Items = page,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+        };
     }
 
     public async Task<List<Order>> GetMyOrders(Guid userId)
@@ -21,7 +47,7 @@ public class OrderService
 
     public async Task<Order?> GetOrderById(Guid orderId)
     {
-        return await _appDbContext.Orders.Include(o => o.Products).FirstOrDefaultAsync(o => o.OrderId == orderId);
+        return await _appDbContext.Orders.Include(o => o.Products).Include(o => o.User).FirstOrDefaultAsync(o => o.OrderId == orderId);
     }
 
     public async Task<Guid> CreateOrderService(Guid userId, PaymentMethod paymentMethod)
@@ -58,7 +84,7 @@ public class OrderService
 
             order.Products.Add(product);
             product.Quantity--;
-            order.Amount = (double) product.Price;
+            order.Amount = (double)product.Price;
             await _appDbContext.SaveChangesAsync();
         }
         else
@@ -67,14 +93,13 @@ public class OrderService
         }
     }
 
-    public async Task<bool> UpdateOrderService(Guid orderId, OrderModel updateOrder)
+    public async Task<bool> UpdateOrderService(Guid orderId, UpdateOrderDto updateOrder)
     {
         var existingOrder = _appDbContext.Orders.FirstOrDefault(o => o.OrderId == orderId);
         if (existingOrder != null)
         {
             existingOrder.Status = updateOrder.Status;
             existingOrder.Payment = updateOrder.Payment;
-            existingOrder.Amount = updateOrder.Amount;
 
             // Add the record to the context
             _appDbContext.Orders.Update(existingOrder);
@@ -85,7 +110,7 @@ public class OrderService
         return false;
     }
 
-    public async Task<bool> UpdateOrderService(Guid userId, Guid orderId, OrderModel updateOrder)
+    public async Task<bool> UpdateOrderService(Guid userId, Guid orderId, UpdateOrderDto updateOrder)
     {
         var existingOrder = _appDbContext.Orders.FirstOrDefault(o => o.OrderId == orderId && o.UserId == userId);
         if (existingOrder != null)

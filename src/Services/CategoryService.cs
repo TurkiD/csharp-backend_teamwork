@@ -1,3 +1,4 @@
+using Dtos.Category;
 using Microsoft.EntityFrameworkCore;
 
 public class CategoryService
@@ -18,7 +19,7 @@ public class CategoryService
         return await _appDbContext.Categories.Include(c => c.Products).FirstOrDefaultAsync(c => c.CategoryID == categoryId);
     }
 
-    public async Task<bool> CreateCategoryService(CategoryModel newCategory)
+    public async Task<bool> CreateCategoryService(CategoryDto newCategory)
     {
         Category category = new Category
         {
@@ -32,7 +33,7 @@ public class CategoryService
         return true;
     }
 
-    public async Task<bool> UpdateCategoryService(Guid categoryId, CategoryModel updateCategory)
+    public async Task<bool> UpdateCategoryService(Guid categoryId, CategoryDto updateCategory)
     {
         var existingCategory = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.CategoryID == categoryId);
         if (existingCategory != null)

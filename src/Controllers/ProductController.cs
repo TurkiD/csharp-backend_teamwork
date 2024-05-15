@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using api.Controllers;
 using api.Middlewares;
+using Dtos.Product;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 [ApiController]
@@ -40,7 +41,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpGet("products/post/{productId}")]
+    [HttpGet("products/{productId}")]
     public async Task<IActionResult> GetProductById(string productId)
     {
         if (!Guid.TryParse(productId, out Guid productIdGuid))
@@ -59,16 +60,16 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost("dashboard/new-post")]
-    public async Task<IActionResult> AddProduct(ProductModel newProduct)
+    [HttpPost("dashboard/create-product")]
+    public async Task<IActionResult> AddProduct(ProductDto newProduct)
     {
         var response = await _productService.AddProductAsync(newProduct);
         return ApiResponse.Created(response);
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("dashboard/products/{productId:guid}/update")]
-    public async Task<IActionResult> UpdateProduct(Guid productId, ProductModel updateProduct)
+    [HttpPut("dashboard/products/{productId:guid}")]
+    public async Task<IActionResult> UpdateProduct(Guid productId, ProductDto updateProduct)
     {
         var result = await _productService.UpdateProductService(productId, updateProduct);
         if (!result)
@@ -79,7 +80,7 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("dashboard/products/{productId:guid}/delete")]
+    [HttpDelete("dashboard/products/{productId:guid}")]
     public async Task<IActionResult> DeleteProduct(string productId)
     {
         if (!Guid.TryParse(productId, out Guid productIdGuid))

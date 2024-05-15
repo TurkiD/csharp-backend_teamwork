@@ -4,6 +4,7 @@ using api.Controllers;
 using api.Dtos.User;
 using api.Middlewares;
 using api.Services;
+using Dtos.User.Profile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,7 +49,7 @@ public class UserController : ControllerBase
     }
 
     // Singed in user only can get the information of their account
-    [HttpGet("account/my-Profile")]
+    [HttpGet("account/profile")]
     public IActionResult GetUser()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -100,8 +101,8 @@ public class UserController : ControllerBase
 
     }
 
-    [HttpPut("account/my-profile/update")]
-    public async Task<IActionResult> UpdateUser(UserModel updateUser)
+    [HttpPut("account/profile")]
+    public async Task<IActionResult> UpdateUser(UserProfileDto updateUser)
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdString))
@@ -120,8 +121,7 @@ public class UserController : ControllerBase
         return ApiResponse.Updated("User is updated successfully");
     }
 
-
-    [HttpDelete("account/my-profile/delete")]
+    [HttpDelete("account/profile")]
     public async Task<IActionResult> DeleteUser()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using api.Controllers;
 using api.Middlewares;
+using Dtos.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,7 +44,7 @@ public class CategoryController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("account/dashboard/categories/new-category")]
-    public async Task<IActionResult> CreateCategory(CategoryModel newCategory)
+    public async Task<IActionResult> CreateCategory(CategoryDto newCategory)
     {
         var result = await _categoryService.CreateCategoryService(newCategory);
         if (!result)
@@ -56,7 +57,7 @@ public class CategoryController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("account/dashboard/categories/{categoryId:guid}/update")]
-    public async Task<IActionResult> UpdateCategory(Guid categoryId, CategoryModel updateCategory)
+    public async Task<IActionResult> UpdateCategory(Guid categoryId, CategoryDto updateCategory)
     {
        var result = await _categoryService.UpdateCategoryService(categoryId, updateCategory);
         if (!result)

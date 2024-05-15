@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using api.Controllers;
 using api.Middlewares;
+using Dtos.Order;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,9 +19,9 @@ namespace Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("history/orders")]
-        public async Task<IActionResult> GetAllOrder()
+        public async Task<IActionResult> GetAllOrder([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
         {
-            var orders = await _orderService.GetAllOrdersService();
+            var orders = await _orderService.GetAllOrdersService(pageNumber, pageSize);
             return ApiResponse.Success(orders);
         }
 
@@ -98,7 +99,7 @@ namespace Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("history/orders/{orderId}/update")]
-        public async Task<IActionResult> UpdateOrder(string orderId, OrderModel updateOrder)
+        public async Task<IActionResult> UpdateOrder(string orderId, UpdateOrderDto updateOrder)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -119,7 +120,7 @@ namespace Controllers
 
         [Authorize(Roles = "notBanned")]
         [HttpPut("history/my-orders/{orderId}/update")]
-        public async Task<IActionResult> UpdateMyOrder(string orderId, OrderModel updateOrder)
+        public async Task<IActionResult> UpdateMyOrder(string orderId, UpdateOrderDto updateOrder)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString))

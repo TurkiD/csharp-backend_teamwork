@@ -62,7 +62,7 @@ public class UserService
         return createUser;
     }
 
-    public async Task<bool> UpdateUser(Guid userId, UserModel updateUser)
+    public async Task<bool> UpdateUser(Guid userId, UserProfileDto updateUser)
     {
         var existingUser = _dbContext.Users.FirstOrDefault(u => u.UserID == userId);
         if (existingUser != null && updateUser != null)
@@ -73,7 +73,7 @@ public class UserService
             existingUser.LastName = updateUser.LastName;
             existingUser.Address = updateUser.Address;
             existingUser.PhoneNumber = updateUser.PhoneNumber;
-            existingUser.IsBanned = updateUser.IsBanned;
+            // existingUser.IsBanned = updateUser.IsBanned;
 
             await _dbContext.SaveChangesAsync();
             return true; // Return true indicating successful update

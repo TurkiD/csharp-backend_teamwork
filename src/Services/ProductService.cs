@@ -1,5 +1,6 @@
 using AutoMapper;
 using Dtos.Pagination;
+using Dtos.Product;
 using Microsoft.EntityFrameworkCore;
 public class ProductService
 {
@@ -11,7 +12,7 @@ public class ProductService
         _mapper = mapper;
     }
 
-    public async Task<PaginationResult<Product>> GetAllProductService(int pageNumber, int pageSize)
+    public async Task<PaginationResult<ProductDto>> GetAllProductService(int pageNumber, int pageSize)
     {
         var totalCount = _appDbContext.Products.Count();
         var totalPages = (int)Math.Ceiling((decimal)totalCount / pageSize);
@@ -19,12 +20,12 @@ public class ProductService
             .OrderByDescending(b => b.CreatedAt)
             .ThenByDescending(b => b.ProductID)
             .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
             // .Include(p => p.Category)
-            // .Select(product => _mapper.Map<ProductModel>(product))
+            .Select(p => _mapper.Map<ProductDto>(p))
+            .Take(pageSize)
             .ToListAsync();
 
-        return new PaginationResult<Product>
+        return new PaginationResult<ProductDto>
         {
             Items = page,
             TotalCount = totalCount,
@@ -38,7 +39,7 @@ public class ProductService
         return await _appDbContext.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.ProductID == productId);
     }
 
-    public async Task<Guid> AddProductAsync(ProductModel newProduct)
+    public async Task<Guid> AddProductAsync(ProductDto newProduct)
     {
         Product product = new Product
         {
@@ -57,7 +58,7 @@ public class ProductService
         return product.ProductID;
     }
 
-    public async Task<bool> UpdateProductService(Guid productId, ProductModel updateProduct)
+    public async Task<bool> UpdateProductService(Guid productId, ProductDto updateProduct)
     {
         var existingProduct = await _appDbContext.Products.FirstOrDefaultAsync(p => p.ProductID == productId);
         if (existingProduct != null)
