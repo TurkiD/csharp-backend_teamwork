@@ -13,21 +13,24 @@ public class Product
 
     public string Description { get; set; } = string.Empty;
 
+    public string Image { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Quantity is required")]
     public int Quantity { get; set; }
 
     [Required(ErrorMessage = "Price is required")]
     public decimal Price { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+
     [Required(ErrorMessage = "CategoryId is required")]
     public Guid CategoryId { get; set; }
 
     public virtual Category? Category { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
 
-    public Guid? CartId { get; set; } 
-
-    public virtual Cart? Cart {set; get;} 
+    public Guid? CartId { get; set; }
+    public virtual Cart? Cart { set; get; }
     public List<Order> Orders { get; set; } = new List<Order>();
 }

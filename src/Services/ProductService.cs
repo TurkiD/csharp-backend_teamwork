@@ -24,6 +24,8 @@ public class ProductService
             .Select(p => _mapper.Map<ProductDto>(p))
             .Take(pageSize)
             .ToListAsync();
+            
+        // return page;
 
         return new PaginationResult<ProductDto>
         {
@@ -47,6 +49,7 @@ public class ProductService
             ProductID = Guid.NewGuid(),
             ProductName = newProduct.ProductName,
             Description = newProduct.Description,
+            Image = newProduct.Image,
             Quantity = newProduct.Quantity,
             Price = newProduct.Price,
             CategoryId = newProduct.CategoryID,

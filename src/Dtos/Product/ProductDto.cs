@@ -11,6 +11,7 @@ namespace Dtos.Product
         public Guid ProductID { get; set; } = Guid.NewGuid();
         public required string ProductName { get; set; }
         public string Description { get; set; } = string.Empty;
+        public string Image { get; set; } = string.Empty;
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
         public required Guid CategoryID { get; set; }

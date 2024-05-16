@@ -42,7 +42,7 @@ public class CategoryController : ControllerBase
     }
 
 
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     [HttpPost("account/dashboard/categories/new-category")]
     public async Task<IActionResult> CreateCategory(CategoryDto newCategory)
     {

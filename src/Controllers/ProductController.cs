@@ -20,11 +20,12 @@ public class ProductController : ControllerBase
     {
 
         var product = await _productService.GetAllProductService(pageNumber, pageSize);
-        if (product == null)
-        {
-            throw new NotFoundException("No Product Found");
-        }
-        return ApiResponse.Success(product, "All products are returned successfully");
+        // if (product == null)
+        // {
+        //     throw new NotFoundException("No Product Found");
+        // }
+        // return ApiResponse.Success(product, "All products are returned successfully");
+        return Ok(product);
     }
 
     [HttpGet("products/search")]
@@ -59,7 +60,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     [HttpPost("dashboard/create-product")]
     public async Task<IActionResult> AddProduct(ProductDto newProduct)
     {

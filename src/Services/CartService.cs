@@ -23,7 +23,7 @@ public class CartService
     public async Task<bool> AddToCartAsync(Guid productId, Guid userId)
     {
         var existingCart = await _dbContext.Carts
-            .Where(c => c.ProductID == productId && c.UserID == userId)
+            .Where(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId))
             .FirstOrDefaultAsync();
 
         // if (existingCart != null)
@@ -34,7 +34,7 @@ public class CartService
 
         var newCart = new Cart
         {
-            ProductID = productId,
+            // ProductID = productId,
             UserID = userId
         };
 
@@ -47,7 +47,7 @@ public class CartService
     public async Task<bool> RemoveFromCartAsync(Guid productId, Guid userId)
     {
         var cartItem = await _dbContext.Carts
-            .Where(c => c.ProductID == productId && c.UserID == userId)
+            .Where(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId))
             .FirstOrDefaultAsync();
 
         if (cartItem == null)
@@ -64,7 +64,7 @@ public class CartService
 
     public async Task<bool> ProductToRemoveFromCart(Guid userId, Guid productId)
     {
-        var productToRemoveFromCart = await _dbContext.Carts.FirstOrDefaultAsync(c => c.ProductID == productId && c.UserID == userId);
+        var productToRemoveFromCart = await _dbContext.Carts.FirstOrDefaultAsync(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId));
         if (productToRemoveFromCart != null)
         {
             _dbContext.Carts.Remove(productToRemoveFromCart);
