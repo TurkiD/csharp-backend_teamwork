@@ -23,4 +23,5 @@ public class User
 
     public List<Order> Orders { get; set; } = new List<Order>();
     public List<Cart> Carts { get; set; } = new List<Cart>();
+    // public Cart? Cart { get; set; }
 }

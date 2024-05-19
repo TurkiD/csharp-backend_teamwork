@@ -15,30 +15,30 @@ public class ProductController : ControllerBase
         _productService = productService;
     }
 
+    // [HttpGet("products")]
+    // public async Task<IActionResult> GetAllProduct([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
+    // {
+
+    //     var product = await _productService.GetAllProductService(pageNumber, pageSize);
+    //     // if (product == null)
+    //     // {
+    //     //     throw new NotFoundException("No Product Found");
+    //     // }
+    //     // return ApiResponse.Success(product, "All products are returned successfully");
+    //     return Ok(product);
+    // }
+
     [HttpGet("products")]
-    public async Task<IActionResult> GetAllProduct([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
+    public async Task<IActionResult> SearchProducts([FromQuery] QueryParameters queryParameters)
     {
-
-        var product = await _productService.GetAllProductService(pageNumber, pageSize);
-        // if (product == null)
-        // {
-        //     throw new NotFoundException("No Product Found");
-        // }
-        // return ApiResponse.Success(product, "All products are returned successfully");
-        return Ok(product);
-    }
-
-    [HttpGet("products/search")]
-    public async Task<IActionResult> SearchProducts(string? keyword, decimal? minPrice, decimal? maxPrice, string? sortBy, bool isAscending, int page = 1, int pageSize = 3)
-    {
-        var products = await _productService.SearchProductsAsync(keyword, minPrice, maxPrice, sortBy, isAscending, page, pageSize);
-        if (products.Any())
+        var products = await _productService.SearchProductsAsync(queryParameters);
+        if (products.Items.Any())
         {
             return Ok(products);
         }
         else
         {
-            throw new NotFoundException("No products found matching the search keyword");
+            throw new NotFoundException("No products found matching the search criteria");
         }
     }
 

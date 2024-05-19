@@ -15,7 +15,7 @@ namespace Dtos.Product
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
         public required Guid CategoryID { get; set; }
-        // public CategoryDto? Category { get; set; }
+        public CategoryDto? Category { get; set; }
         // public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

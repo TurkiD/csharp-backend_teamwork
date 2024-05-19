@@ -1,20 +1,27 @@
+using AutoMapper;
+using Dtos.Cart;
 using Microsoft.EntityFrameworkCore;
 public class CartService
 {
     private readonly AppDBContext _dbContext;
     private readonly ILogger<UserService> _logger;
 
-    public CartService(AppDBContext dbContext, ILogger<UserService> logger)
+    private readonly IMapper _mapper;
+
+    public CartService(AppDBContext dbContext, ILogger<UserService> logger, IMapper mapper)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _mapper = mapper;
     }
 
     public async Task<List<Cart>?> GetCartItemsAsync(Guid userId)
     {
         var cartItems = await _dbContext.Carts
             .Where(c => c.UserID == userId)
+            // .Include(c => c.User)
             .Include(c => c.Products)
+            // .Select(p => _mapper.Map<CartDto>(p))
             .ToListAsync();
 
         return cartItems;
