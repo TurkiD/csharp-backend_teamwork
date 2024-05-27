@@ -128,5 +128,5 @@ app.UseHttpsRedirection();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5125";
-// app.Run($"http://localhost:5343");
-app.Run($"http://localhost:{port}");
+// app.Run($"http://localhost:5125");
+app.Run($"http://0.0.0.0:{port}");
