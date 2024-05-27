@@ -127,4 +127,6 @@ app.UseCors("AllowSpecificOrigins");
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.Run("http://localhost:5343");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5125";
+// app.Run($"http://localhost:5343");
+app.Run($"http://localhost:{port}");
