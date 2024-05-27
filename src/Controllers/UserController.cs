@@ -25,10 +25,10 @@ public class UserController : ControllerBase
 
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("account/dashboard/users")]
-    public async Task<IActionResult> GetAllUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers([FromQuery] QueryParameters queryParameters)
     {
-        var users = await _userService.GetAllUsersAsync(pageNumber, pageSize);
+        var users = await _userService.GetAllUsersAsync(queryParameters);
         if (users == null)
         {
             throw new NotFoundException("No user Found");
@@ -37,7 +37,7 @@ public class UserController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("account/dashboard/users/{userId}")]
+    [HttpGet("user/{userId}")]
     public IActionResult GetUser(Guid userId)
     {
         var user = _userService.GetUserById(userId);
@@ -49,7 +49,7 @@ public class UserController : ControllerBase
     }
 
     // Singed in user only can get the information of their account
-    [HttpGet("account/profile")]
+    [HttpGet("user/profile")]
     public IActionResult GetUser()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -69,17 +69,18 @@ public class UserController : ControllerBase
         return ApiResponse.Success(user, "User Returned");
     }
 
-    [HttpPost("signup")]
-    public async Task<IActionResult> CreateUser(SignupDto newUser)
+    [HttpPost("register")]
+    public async Task<IActionResult> CreateUser([FromBody] SignupDto newUser)
     {
         var createdUser = await _userService.CreateUser(newUser);
-        if (createdUser != null)
+        if (createdUser)
         {
             return ApiResponse.Created("User is created successfully");
         }
         else
         {
-            throw new Exception("An error occurred while creating the user.");
+            // throw new BadRequestException("User Already exist");
+            return ApiResponse.BadRequest("Username or Email Already Exist");
         }
     }
 
@@ -101,8 +102,8 @@ public class UserController : ControllerBase
 
     }
 
-    [HttpPut("account/profile")]
-    public async Task<IActionResult> UpdateUser(UserProfileDto updateUser)
+    [HttpPut("user")]
+    public async Task<IActionResult> UpdateUser([FromBody] UserProfileDto updateUser)
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdString))
@@ -121,7 +122,19 @@ public class UserController : ControllerBase
         return ApiResponse.Updated("User is updated successfully");
     }
 
-    [HttpDelete("account/profile")]
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("user/{userId:guid}")]
+    public async Task<IActionResult> DeleteUser(Guid userId)
+    {
+        var result = await _userService.DeleteUser(userId);
+        if (!result)
+        {
+            throw new NotFoundException("User does not exist or an invalid Id is provided");
+        }
+        return ApiResponse.Deleted("User is deleted successfully");
+    }
+
+    [HttpDelete("user")]
     public async Task<IActionResult> DeleteUser()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

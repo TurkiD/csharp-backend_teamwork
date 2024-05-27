@@ -15,69 +15,84 @@ public class CartService
         _mapper = mapper;
     }
 
-    public async Task<List<Cart>?> GetCartItemsAsync(Guid userId)
+    public async Task<List<Cart>> GetCartItemsAsync(Guid userId)
     {
-        var cartItems = await _dbContext.Carts
-            .Where(c => c.UserID == userId)
-            // .Include(c => c.User)
-            .Include(c => c.Products)
-            // .Select(p => _mapper.Map<CartDto>(p))
-            .ToListAsync();
-
-        return cartItems;
+        return await _dbContext.Carts.Include(c => c.Products).Where(c => c.UserID == userId).ToListAsync();
     }
 
     public async Task<bool> AddToCartAsync(Guid productId, Guid userId)
     {
         var existingCart = await _dbContext.Carts
-            .Where(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId))
-            .FirstOrDefaultAsync();
-
-        // if (existingCart != null)
-        // {
-        //     // Product already exists in the user's cart
-        //     return false;
-        // }
+            .FirstOrDefaultAsync(c => c.UserID == userId);
 
         var newCart = new Cart
         {
-            // ProductID = productId,
+            // ProductId = productId,
             UserID = userId
         };
-
-        _dbContext.Carts.Add(newCart);
-        await _dbContext.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<bool> RemoveFromCartAsync(Guid productId, Guid userId)
-    {
-        var cartItem = await _dbContext.Carts
-            .Where(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId))
-            .FirstOrDefaultAsync();
-
-        if (cartItem == null)
+        if (existingCart == null)
         {
-            // Product not found in the user's cart
-            return false;
+            _dbContext.Carts.Add(newCart);
+            await _dbContext.SaveChangesAsync();
         }
 
-        _dbContext.Carts.Remove(cartItem);
-        await _dbContext.SaveChangesAsync();
+        var product = await _dbContext.Products.FindAsync(productId);
 
-        return true;
-    }
-
-    public async Task<bool> ProductToRemoveFromCart(Guid userId, Guid productId)
-    {
-        var productToRemoveFromCart = await _dbContext.Carts.FirstOrDefaultAsync(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId));
-        if (productToRemoveFromCart != null)
+        if (existingCart != null && product != null)
         {
-            _dbContext.Carts.Remove(productToRemoveFromCart);
+
+            existingCart.Products.Add(product);
             await _dbContext.SaveChangesAsync();
             return true;
         }
         return false;
+    }
+
+    // public async Task<bool> RemoveFromCartAsync(Guid productId, Guid userId)
+    // {
+    //     var cartItem = await _dbContext.Carts
+    //         .Where(c => c.Products.Any(p => p.ProductID == productId && c.UserID == userId))
+    //         .FirstOrDefaultAsync();
+
+    //     if (cartItem == null)
+    //     {
+    //         // Product not found in the user's cart
+    //         return false;
+    //     }
+
+    //     _dbContext.Carts.Remove(cartItem);
+    //     await _dbContext.SaveChangesAsync();
+    //     return true;
+    // }
+
+    public async Task<bool> RemoveProductFromCart(Guid userId, Guid productId)
+    {
+        // Find the cart that belongs to the given userId
+        var cart = await _dbContext.Carts
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(c => c.UserID == userId);
+
+        // If the cart is not found
+        if (cart == null)
+        {
+            return false;
+        }
+
+        // Find the product-cart relationship that matches the given productId and userId
+        var productCartRelationship = cart.Products.FirstOrDefault(p => p.ProductID == productId);
+
+        // If the product-cart relationship is not found
+        if (productCartRelationship == null)
+        {
+            return false;
+        }
+
+        // Remove the product-cart relationship
+        cart.Products.Remove(productCartRelationship);
+
+        // Save the changes to the database
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 }

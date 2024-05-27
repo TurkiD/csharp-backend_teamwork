@@ -5,11 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class Cart
 {
     public Guid CartId = Guid.NewGuid();
-    // [Required(ErrorMessage = "User Id is required")]
-    [Required(ErrorMessage = "User Id is required")]
-    // public Guid ProductID { get; set; }
+    // public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public Guid UserID { get; set; }
-    // public virtual Product? Product { get; set; }
-    public List<Product> Products { get; set; } = new List<Product>();
     public virtual User? User { get; set; }
+    public List<Product> Products { get; set; } = new List<Product>();
 }

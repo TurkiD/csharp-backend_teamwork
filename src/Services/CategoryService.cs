@@ -1,4 +1,5 @@
 using Dtos.Category;
+using Dtos.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 public class CategoryService
@@ -9,9 +10,43 @@ public class CategoryService
         _appDbContext = appDbContext;
     }
 
-    public async Task<IEnumerable<Category>> GetAllCategoryService()
+    public async Task<PaginationResult<Category>> GetAllCategoryService(QueryParameters queryParams)
     {
-        return await _appDbContext.Categories.Include(c => c.Products).ToListAsync();
+        var query = _appDbContext.Categories.AsQueryable();
+        var totalCount = await query.CountAsync();
+
+        if (!string.IsNullOrEmpty(queryParams.SearchTerm))
+        {
+            query = query.Where(c => c.Name.Contains(queryParams.SearchTerm) || c.Description.Contains(queryParams.SearchTerm));
+        }
+        switch (queryParams.SortBy.ToLower())
+        {
+            case "name":
+                query = queryParams.IsAscending ? query.OrderBy(c => c.Name) : query.OrderByDescending(c => c.Name);
+                break;
+            case "date":
+                query = queryParams.IsAscending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt);
+                break;
+            default:
+                query = query.OrderBy(p => p.CreatedAt);
+                break;
+        }
+
+        var totalPages = (int)Math.Ceiling((decimal)totalCount / queryParams.PageSize);
+        var categories = await query
+            .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
+            // .Select(p => _mapper.Map<ProductDto>(p))
+            .ToListAsync();
+
+        return new PaginationResult<Category>
+        {
+            Items = categories,
+            TotalCount = totalCount,
+            PageNumber = queryParams.PageNumber,
+            PageSize = queryParams.PageSize,
+        };
+        // return await _appDbContext.Categories.Include(c => c.Products).ToListAsync();
     }
 
     public async Task<Category?> GetCategoryById(Guid categoryId)
@@ -19,7 +54,7 @@ public class CategoryService
         return await _appDbContext.Categories.Include(c => c.Products).FirstOrDefaultAsync(c => c.CategoryID == categoryId);
     }
 
-    public async Task<bool> CreateCategoryService(CategoryDto newCategory)
+    public async Task<Category> CreateCategoryService(CategoryDto newCategory)
     {
         Category category = new Category
         {
@@ -30,7 +65,7 @@ public class CategoryService
 
         await _appDbContext.Categories.AddAsync(category);
         await _appDbContext.SaveChangesAsync();
-        return true;
+        return category;
     }
 
     public async Task<bool> UpdateCategoryService(Guid categoryId, CategoryDto updateCategory)

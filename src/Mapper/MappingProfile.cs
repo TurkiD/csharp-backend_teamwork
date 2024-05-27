@@ -1,6 +1,8 @@
 using api.Dtos;
 using AutoMapper;
-using Dtos.OrderDto;
+using Dtos.Cart;
+using Dtos.Category;
+using Dtos.Orders;
 using Dtos.Product;
 using Dtos.User.Profile;
 using EntityFramework;
@@ -13,9 +15,16 @@ namespace api.Mapper
         {
             CreateMap<User, UserDto>();
             CreateMap<User, UserProfileDto>();
-            CreateMap<Product, ProductDto>();
-            CreateMap<Product, ProductOrderDto>();
-            CreateMap<Order, OrderDto>();
+            CreateMap<Product, UpdateProductDto>();
+            CreateMap<Category, CategoryDto>();
+            CreateMap<Cart, CartDto>();
+
+
+            CreateMap<Product, ProductDto>()
+            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
+
+            CreateMap<Order, OrderDto>()
+            .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
         }
     }
 }

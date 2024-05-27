@@ -49,9 +49,10 @@ public class AppDBContext : DbContext
         .HasForeignKey(o => o.UserId);
 
         modelBuilder.Entity<User>()
-         .HasMany(u => u.Carts)    // Each User can have multiple Carts
-         .WithOne(c => c.User)     // Each Cart belongs to one User
-         .HasForeignKey(c => c.UserID);  // Foreign key in Cart table
+         .HasOne(u => u.Cart)    // Each User can have multiple Carts
+         .WithOne(c => c.User)
+         .HasForeignKey<Cart>(c => c.UserID)
+         .IsRequired();
 
         // --------------------Category--------------------
         modelBuilder.Entity<Category>().HasKey(c => c.CategoryID); //PK
@@ -98,12 +99,17 @@ public class AppDBContext : DbContext
         //-------------Cart-------------------- 
 
         modelBuilder.Entity<Cart>()
-        .HasKey(c => new { c.CartId});
+        .HasKey(c => new { c.CartId });
 
+        // modelBuilder.Entity<Cart>()
+        // .HasMany(c => c.Products)    // Each User can have multiple Carts
+        // .WithOne(p => p.Cart)     // Each Cart belongs to one User
+        // .HasForeignKey(p => p.CartId);
+        // ### Relationship Many-To-Many
         modelBuilder.Entity<Cart>()
-        .HasMany(c => c.Products)    // Each User can have multiple Carts
-        .WithOne(p => p.Cart)     // Each Cart belongs to one User
-        .HasForeignKey(p => p.CartId); 
+        .HasMany(c => c.Products)
+        .WithMany(p => p.Carts)
+        .UsingEntity(j => j.ToTable("CartProduct"));
 
         // Configure relationships and apply validations
         // modelBuilder.Entity<Cart>()

@@ -2,7 +2,7 @@ using Dtos.Order;
 using Dtos.Product;
 using Dtos.User;
 
-namespace Dtos.OrderDto
+namespace Dtos.Orders
 {
     public class OrderDto
     {
@@ -16,6 +16,6 @@ namespace Dtos.OrderDto
 
 
         public UserInfoForOrderDto? User { get; set; }
-        public List<ProductOrderDto>? Products { get; set; }
+        public List<ProductDto>? Products { get; set; }
     }
 }

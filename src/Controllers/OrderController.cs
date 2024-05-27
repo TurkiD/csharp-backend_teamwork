@@ -17,17 +17,17 @@ namespace Controllers
             _orderService = orderService;
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet("history/orders")]
-        public async Task<IActionResult> GetAllOrder([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
+        // [Authorize(Roles = "Admin")]
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetAllOrder([FromQuery] QueryParameters queryParameters)
         {
-            var orders = await _orderService.GetAllOrdersService(pageNumber, pageSize);
+            var orders = await _orderService.GetAllOrdersService(queryParameters);
             return ApiResponse.Success(orders);
         }
 
         // Only unbanned Users can get their orders 
         [Authorize(Roles = "notBanned")]
-        [HttpGet("history/my-orders")]
+        [HttpGet("my-orders")]
         public async Task<IActionResult> GetMyOrders()
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -51,7 +51,7 @@ namespace Controllers
 
         // Only Admin can return orders by chosen Id
         [Authorize(Roles = "Admin")]
-        [HttpGet("history/orders/{orderId}")]
+        [HttpGet("orders/{orderId}")]
         public async Task<IActionResult> GetOrderById(Guid orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -64,7 +64,7 @@ namespace Controllers
         }
 
         [Authorize(Roles = "notBanned")]
-        [HttpPost("post/{productId}/create-order")]
+        [HttpPost("orders/{productId}")]
         public async Task<IActionResult> CreateOrder(Guid productId, PaymentMethod paymentMethod)
         {
             // Create Order
@@ -98,7 +98,7 @@ namespace Controllers
         // }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("history/orders/{orderId}/update")]
+        [HttpPut("orders/{orderId}")]
         public async Task<IActionResult> UpdateOrder(string orderId, UpdateOrderDto updateOrder)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -119,7 +119,7 @@ namespace Controllers
         }
 
         [Authorize(Roles = "notBanned")]
-        [HttpPut("history/my-orders/{orderId}/update")]
+        [HttpPut("my-orders/{orderId}")]
         public async Task<IActionResult> UpdateMyOrder(string orderId, UpdateOrderDto updateOrder)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -144,7 +144,7 @@ namespace Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("history/orders/{orderId}/delete")]
+        [HttpDelete("orders/{orderId}")]
         public async Task<IActionResult> DeleteOrder(string orderId)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -165,7 +165,7 @@ namespace Controllers
         }
 
         [Authorize(Roles = "notBanned")]
-        [HttpDelete("history/my-orders/{orderId}/delete")]
+        [HttpDelete("my-orders/{orderId}")]
         public async Task<IActionResult> DeleteMyOrder(string orderId)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

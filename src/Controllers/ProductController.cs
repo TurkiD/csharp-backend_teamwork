@@ -29,9 +29,9 @@ public class ProductController : ControllerBase
     // }
 
     [HttpGet("products")]
-    public async Task<IActionResult> SearchProducts([FromQuery] QueryParameters queryParameters)
+    public async Task<IActionResult> GetProducts([FromQuery] QueryParameters queryParameters)
     {
-        var products = await _productService.SearchProductsAsync(queryParameters);
+        var products = await _productService.GetAllProductService(queryParameters);
         if (products.Items.Any())
         {
             return Ok(products);
@@ -60,28 +60,28 @@ public class ProductController : ControllerBase
         }
     }
 
-    // [Authorize(Roles = "Admin")]
-    [HttpPost("dashboard/create-product")]
-    public async Task<IActionResult> AddProduct(ProductDto newProduct)
+    [Authorize(Roles = "Admin")]
+    [HttpPost("products")]
+    public async Task<IActionResult> AddProduct([FromBody] ProductDto newProduct)
     {
         var response = await _productService.AddProductAsync(newProduct);
-        return ApiResponse.Created(response);
+        return ApiResponse.Created(response, "Product is created successfully");
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("dashboard/products/{productId:guid}")]
-    public async Task<IActionResult> UpdateProduct(Guid productId, ProductDto updateProduct)
+    [HttpPut("products/{productId:guid}")]
+    public async Task<IActionResult> UpdateProduct(Guid productId, UpdateProductDto updateProduct)
     {
         var result = await _productService.UpdateProductService(productId, updateProduct);
-        if (!result)
+        if (result == null)
         {
             throw new NotFoundException("product Not Found");
         }
-        return ApiResponse.Updated("Product is Updated successfully");
+        return ApiResponse.Updated(result, "Product is Updated successfully");
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("dashboard/products/{productId:guid}")]
+    [HttpDelete("products/{productId:guid}")]
     public async Task<IActionResult> DeleteProduct(string productId)
     {
         if (!Guid.TryParse(productId, out Guid productIdGuid))

@@ -1,9 +1,11 @@
-public class QueryParameters{
-    public int pageNumber { get; set;} = 1;
-    public int pageSize { get; set;} = 10;
-    public string searchTerm { get; set;} = string.Empty;
-    public decimal minPrice { get; set;} = 0;
-    public decimal maxPrice { get; set;}
-    public string sortBy { get; set;} = string.Empty;
-    public bool isAscending { get; set;} = false;
+public class QueryParameters
+{
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 8;
+    public string? SearchTerm { get; set; } = "";
+    public string? SortBy { get; set; } = "Name";
+    public List<Guid>? SelectedCategories { get; set; } = [];
+    public bool IsAscending { get; set; } = false;
+    public decimal? MinPrice { get; set; }
+    public decimal? MaxPrice { get; set; }
 }

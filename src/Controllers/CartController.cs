@@ -3,7 +3,7 @@ using api.Controllers;
 using api.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 
-[Route("api/")]
+[Route("/api/")]
 [ApiController]
 public class CartController : ControllerBase
 {
@@ -14,7 +14,7 @@ public class CartController : ControllerBase
         _cartService = cartService;
     }
 
-    [HttpGet("/account/cart")]
+    [HttpGet("cart")]
     public async Task<IActionResult> GetCartItems()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -38,7 +38,7 @@ public class CartController : ControllerBase
         }
     }
 
-    [HttpPost("products/post/{productId}/add-to-cart")]
+    [HttpPost("cart/{productId}")]
     public async Task<IActionResult> AddToCart(Guid productId)
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -48,7 +48,7 @@ public class CartController : ControllerBase
         }
         if (!Guid.TryParse(userIdString, out Guid userId))
         {
-            throw new BadRequestException("Invalid user ID Format");
+            throw new BadRequestException("Invalid User Id");
         }
 
         if (await _cartService.AddToCartAsync(productId, userId))
@@ -61,7 +61,7 @@ public class CartController : ControllerBase
         }
     }
 
-    [HttpDelete("account/cart/products/{productId:guid}/delete")]
+    [HttpDelete("cart/{productId}")]
     public async Task<IActionResult> DeleteProductFromCart(Guid productId)
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -74,7 +74,7 @@ public class CartController : ControllerBase
             throw new BadRequestException("Invalid user ID Format");
         }
 
-        var result = await _cartService.ProductToRemoveFromCart(userId, productId);
+        var result = await _cartService.RemoveProductFromCart(userId, productId);
         if (!result)
         {
             throw new NotFoundException("product does not exist in the cart");

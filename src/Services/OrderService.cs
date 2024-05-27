@@ -1,9 +1,7 @@
 using AutoMapper;
 using Dtos.Order;
-using Dtos.OrderDto;
+using Dtos.Orders;
 using Dtos.Pagination;
-using Dtos.Product;
-using Dtos.User;
 using EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,26 +15,25 @@ public class OrderService
         _mapper = mapper;
     }
 
-    public async Task<PaginationResult<OrderDto>> GetAllOrdersService(int pageNumber, int pageSize)
+    public async Task<PaginationResult<OrderDto>> GetAllOrdersService(QueryParameters queryParams)
     {
-        var totalCount = _appDbContext.Orders.Count();
-        var totalPages = (int)Math.Ceiling((decimal)totalCount / pageSize);
-        var page = await _appDbContext.Orders
-            // .Include(o => o.User)
-            // .Include(o => o.Products)
-            .OrderByDescending(o => o.CreatedAt)
-            .ThenByDescending(o => o.OrderId)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(p => _mapper.Map<OrderDto>(p))
+        var query = _appDbContext.Orders.AsQueryable();
+        var totalCount = await query.CountAsync();
+
+        var totalPages = (int)Math.Ceiling((decimal)totalCount / queryParams.PageSize);
+        var orders = await query
+            .Include(o => o.Products)
+            .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
+            .Select(o => _mapper.Map<OrderDto>(o))
             .ToListAsync();
 
         return new PaginationResult<OrderDto>
         {
-            Items = page,
+            Items = orders,
             TotalCount = totalCount,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
+            PageNumber = queryParams.PageNumber,
+            PageSize = queryParams.PageSize,
         };
     }
 

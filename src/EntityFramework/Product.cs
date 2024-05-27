@@ -30,7 +30,6 @@ public class Product
     public virtual Category? Category { get; set; }
 
 
-    public Guid? CartId { get; set; }
-    public virtual Cart? Cart { set; get; }
+    public List<Cart> Carts { set; get; } = [];
     public List<Order> Orders { get; set; } = new List<Order>();
 }

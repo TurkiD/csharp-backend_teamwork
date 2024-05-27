@@ -16,10 +16,10 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet("categories")]
-    public async Task<IActionResult> GetAllCategory()
+    public async Task<IActionResult> GetAllCategory([FromQuery] QueryParameters queryParams)
     {
-        var categories = await _categoryService.GetAllCategoryService();
-        if (categories.ToList().Count < 1)
+        var categories = await _categoryService.GetAllCategoryService(queryParams);
+        if (!categories.Items.Any())
         {
            throw new NotFoundException("No Categories Found");
         }
@@ -42,21 +42,21 @@ public class CategoryController : ControllerBase
     }
 
 
-    // [Authorize(Roles = "Admin")]
-    [HttpPost("account/dashboard/categories/new-category")]
+    [Authorize(Roles = "Admin")]
+    [HttpPost("categories")]
     public async Task<IActionResult> CreateCategory(CategoryDto newCategory)
     {
         var result = await _categoryService.CreateCategoryService(newCategory);
-        if (!result)
+        if (result == null)
         {
             throw new ValidationException("Invalid Category Data");
         }
-        return ApiResponse.Created("Category is created successfully");
+        return ApiResponse.Created(result, "Category is created successfully");
     }
 
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("account/dashboard/categories/{categoryId:guid}/update")]
+    [HttpPut("categories/{categoryId:guid}")]
     public async Task<IActionResult> UpdateCategory(Guid categoryId, CategoryDto updateCategory)
     {
        var result = await _categoryService.UpdateCategoryService(categoryId, updateCategory);
@@ -69,7 +69,7 @@ public class CategoryController : ControllerBase
 
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("account/dashboard/categories/{categoryId:guid}/delete")]
+    [HttpDelete("categories/{categoryId:guid}")]
     public async Task<IActionResult> DeleteCategory(Guid categoryId)
     {
         var result = await _categoryService.DeleteCategoryService(categoryId);

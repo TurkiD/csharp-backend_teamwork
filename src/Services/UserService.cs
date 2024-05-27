@@ -22,34 +22,67 @@ public class UserService
         _mapper = mapper;
     }
 
-    public async Task<PaginationResult<UserDto>> GetAllUsersAsync(int pageNumber, int pageSize)
+    public async Task<PaginationResult<UserDto>> GetAllUsersAsync(QueryParameters queryParams)
     {
+        var query = _dbContext.Users.AsQueryable();
+        var totalCount = await query.CountAsync();
 
-        var totalUserCount = await _dbContext.Users.CountAsync();
-        var users = await _dbContext.Users
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .Select(u => _mapper.Map<UserDto>(u)).ToListAsync();
+        if (!string.IsNullOrEmpty(queryParams.SearchTerm))
+        {
+            query = query.Where(u => u.Username.Contains(queryParams.SearchTerm));
+        }
+        if (!string.IsNullOrEmpty(queryParams.SearchTerm))
+        {
+            query = query.Where(u => u.Email.Contains(queryParams.SearchTerm));
+        }
+
+        switch (queryParams.SortBy.ToLower())
+        {
+            case "name":
+                query = queryParams.IsAscending ? query.OrderBy(p => p.Username) : query.OrderByDescending(p => p.Username);
+                break;
+            case "date":
+                query = queryParams.IsAscending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt);
+                break;
+            default:
+                query = query.OrderBy(p => p.CreatedAt);
+                break;
+        }
+
+
+        var totalPages = (int)Math.Ceiling((decimal)totalCount / queryParams.PageSize);
+        var users = await query
+            .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
+            .Select(u => _mapper.Map<UserDto>(u))
+            .ToListAsync();
 
         return new PaginationResult<UserDto>
         {
             Items = users,
-            TotalCount = totalUserCount,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
+            TotalCount = totalCount,
+            PageNumber = queryParams.PageNumber,
+            PageSize = queryParams.PageSize,
         };
     }
 
     public async Task<UserProfileDto> GetUserById(Guid userId)
     {
         // return await _dbContext.Users.Include(u => u.Orders).FirstOrDefaultAsync(u => u.UserID == userId);
-        var user = await _dbContext.Users.FindAsync(userId);
+        var user = await _dbContext.Users.Include(u => u.Orders).FirstOrDefaultAsync(u => u.UserID == userId);
+        // var user = await _dbContext.Users.FindAsync(userId);
         var userDto = _mapper.Map<UserProfileDto>(user);
         return userDto;
     }
 
-    public async Task<User> CreateUser(SignupDto newUser)
+    public async Task<bool> CreateUser(SignupDto newUser)
     {
+        // var isExist = _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username || u.Email == newUser.Email);
+        var isExist = _dbContext.Users.FirstOrDefault(u => u.Username == newUser.Username || u.Email == newUser.Email);
+        if (isExist != null)
+        {
+            return false;
+        }
         var createUser = new User
         {
             Username = newUser.Username,
@@ -59,7 +92,7 @@ public class UserService
 
         _dbContext.Users.Add(createUser);
         await _dbContext.SaveChangesAsync();
-        return createUser;
+        return true;
     }
 
     public async Task<bool> UpdateUser(Guid userId, UserProfileDto updateUser)
@@ -74,6 +107,7 @@ public class UserService
             existingUser.Address = updateUser.Address;
             existingUser.PhoneNumber = updateUser.PhoneNumber;
             // existingUser.IsBanned = updateUser.IsBanned;
+            // existingUser.IsAdmin = updateUser.IsAdmin;
 
             await _dbContext.SaveChangesAsync();
             return true; // Return true indicating successful update
@@ -84,7 +118,6 @@ public class UserService
 
     public async Task<bool> DeleteUser(Guid userId)
     {
-
         var userToDelete = _dbContext.Users.FirstOrDefault(u => u.UserID == userId);
         if (userToDelete != null)
         {

@@ -7,6 +7,7 @@ namespace api.Dtos
         public required string Email { get; set; }
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
+        public string Image { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
 
