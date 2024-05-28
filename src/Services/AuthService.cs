@@ -34,7 +34,7 @@ namespace api.Services
                 new Claim(ClaimTypes.Role, user.IsBanned? "Banned" : "notBanned"),
             }),
 
-                Expires = DateTime.UtcNow.AddMinutes(15),
+                Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
 
                 Issuer = jwtIssuer,

@@ -54,7 +54,6 @@ public class CategoryController : ControllerBase
         return ApiResponse.Created(result, "Category is created successfully");
     }
 
-
     [Authorize(Roles = "Admin")]
     [HttpPut("categories/{categoryId:guid}")]
     public async Task<IActionResult> UpdateCategory(Guid categoryId, CategoryDto updateCategory)
