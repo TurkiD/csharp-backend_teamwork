@@ -77,19 +77,25 @@ public class UserService
 
     public async Task<bool> CreateUser(SignupDto newUser)
     {
-        // var isExist = _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username || u.Email == newUser.Email);
-        var isExist = _dbContext.Users.FirstOrDefault(u => u.Username == newUser.Username || u.Email == newUser.Email);
-        if (isExist != null)
+        // Check if a user with the same username or email already exists
+        var isExist = await _dbContext.Users.AnyAsync(u => u.Username == newUser.Username || u.Email == newUser.Email);
+        if (isExist)
         {
             return false;
         }
+
+        // Hash the password
+        var hashedPassword = _passwordHasher.HashPassword(null!, newUser.Password);
+
+        // Create a new user
         var createUser = new User
         {
             Username = newUser.Username,
             Email = newUser.Email,
-            Password = _passwordHasher.HashPassword(null, newUser.Password),
+            Password = hashedPassword,
         };
 
+        // Add the user to the database and save changes
         _dbContext.Users.Add(createUser);
         await _dbContext.SaveChangesAsync();
         return true;
